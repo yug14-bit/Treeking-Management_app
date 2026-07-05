@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Browse Treks — TrailMaster{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+
+  <div class="mb-4">
+    <h4 class="fw-bold mb-0">Browse Treks</h4>
+    <p class="text-muted small mb-0">Find your next adventure</p>
+  </div>
+
+  <!-- Search & Filter -->
+  <form method="GET" class="card border-0 p-3 mb-4"
+        style="border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label small fw-semibold text-muted">Search</label>
+        <input type="text" class="form-control" name="q"
+               placeholder="Trek name or location..."
+               value="{{ q }}" style="border-radius:8px;"/>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold text-muted">Difficulty</label>
+        <select class="form-select" name="difficulty" style="border-radius:8px;">
+          <option value="">All Difficulties</option>
+          {% for d in ['Easy','Moderate','Hard'] %}
+            <option value="{{ d }}" {% if difficulty == d %}selected{% endif %}>{{ d }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small fw-semibold text-muted">Location</label>
+        <input type="text" class="form-control" name="location"
+               placeholder="e.g. Himachal"
+               value="{{ location }}" style="border-radius:8px;"/>
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button class="btn btn-success flex-fill fw-semibold" type="submit"
+                style="border-radius:8px;">Search</button>
+        <a href="{{ url_for('user.browse_treks') }}"
+           class="btn btn-outline-secondary px-3" style="border-radius:8px;">
+          <i class="bi bi-x"></i>
+        </a>
+      </div>
+    </div>
+  </form>
+
+  {% if treks %}
+  <p class="text-muted small mb-3">{{ treks | length }} trek(s) found</p>
+  <div class="row g-3">
+    {% for trek in treks %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card border-0 h-100"
+           style="border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);transition:box-shadow .2s;"
+           onmouseover="this.style.boxShadow='0 4px 16px rgba(106,61,232,.15)'"
+           onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,.06)'">
+        <img src="{{ url_for('static', filename='uploads/' + (trek.image or 'trek_default.jpg')) }}" 
+             class="card-img-top" alt="{{ trek.name }}" 
+             style="height: 180px; object-fit: cover; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+        <div class="card-body p-3 d-flex flex-column">
+
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h6 class="fw-bold mb-0">{{ trek.name }}</h6>
+            {% if trek.difficulty == 'Easy' %}
+              <span class="badge rounded-pill" style="background:#dcfce7;color:#15803d;font-size:.72rem;">Easy</span>
+            {% elif trek.difficulty == 'Moderate' %}
+              <span class="badge rounded-pill" style="background:#fef3c7;color:#b45309;font-size:.72rem;">Moderate</span>
+            {% else %}
+              <span class="badge rounded-pill" style="background:#fee2e2;color:#b91c1c;font-size:.72rem;">Hard</span>
+            {% endif %}
+          </div>
+
+          <p class="text-muted small mb-3">
+            <i class="bi bi-geo-alt me-1"></i>{{ trek.location }}
+          </p>
+
+          {% if trek.description %}
+          <p class="text-muted small mb-3"
+             style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+            {{ trek.description }}
+          </p>
+          {% endif %}
+
+          <div class="d-flex gap-3 text-muted small mb-3 pb-3 border-bottom">
+            <span><i class="bi bi-clock me-1"></i>{{ trek.duration_days }}d</span>
+            <span><i class="bi bi-people me-1"></i>{{ trek.available_slots }} left</span>
+            {% if trek.altitude_m %}
+            <span><i class="bi bi-arrow-up me-1"></i>{{ trek.altitude_m }}m</span>
+            {% endif %}
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-auto">
+            <span class="fw-bold" style="color:#6a3de8;">{{ trek.price | currency }}</span>
+            <a href="{{ url_for('user.trek_detail', trek_id=trek.id) }}"
+               class="btn btn-success btn-sm px-3 fw-semibold"
+               style="border-radius:8px;">View & Book</a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-binoculars fs-1 d-block mb-3"></i>
+    <h6 class="fw-semibold">No treks found</h6>
+    <p class="small mb-3">Try clearing your filters</p>
+    <a href="{{ url_for('user.browse_treks') }}"
+       class="btn btn-outline-success btn-sm" style="border-radius:8px;">Clear Filters</a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

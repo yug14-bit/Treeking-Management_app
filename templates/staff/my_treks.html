@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}My Treks — TrailMaster{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+
+  <div class="mb-4">
+    <h4 class="fw-bold mb-0">My Treks</h4>
+    <p class="text-muted small mb-0">Treks assigned to you for management</p>
+  </div>
+
+  {% if treks %}
+  <div class="row g-3">
+    {% for trek in treks %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card border-0 h-100"
+           style="border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+        <div class="card-body p-3 d-flex flex-column">
+
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h6 class="fw-bold mb-0">{{ trek.name }}</h6>
+            {% if trek.status == 'Open' %}
+              <span class="badge rounded-pill" style="background:#dcfce7;color:#15803d;font-size:.72rem;">Open</span>
+            {% elif trek.status == 'Closed' %}
+              <span class="badge rounded-pill" style="background:#f5f5f5;color:#616161;font-size:.72rem;">Closed</span>
+            {% elif trek.status == 'Completed' %}
+              <span class="badge rounded-pill" style="background:#ede9fe;color:#5b21b6;font-size:.72rem;">Completed</span>
+            {% elif trek.status == 'Approved' %}
+              <span class="badge rounded-pill" style="background:#e0f2fe;color:#0369a1;font-size:.72rem;">Approved</span>
+            {% else %}
+              <span class="badge rounded-pill" style="background:#fef3c7;color:#b45309;font-size:.72rem;">{{ trek.status }}</span>
+            {% endif %}
+          </div>
+
+          <p class="text-muted small mb-3">
+            <i class="bi bi-geo-alt me-1"></i>{{ trek.location }}
+          </p>
+
+          <div class="d-flex align-items-center gap-2 mb-3" style="font-size:.78rem;">
+            {% if trek.difficulty == 'Easy' %}
+              <span class="badge rounded-pill" style="background:#dcfce7;color:#15803d;font-size:.7rem;">Easy</span>
+            {% elif trek.difficulty == 'Moderate' %}
+              <span class="badge rounded-pill" style="background:#fef3c7;color:#b45309;font-size:.7rem;">Moderate</span>
+            {% else %}
+              <span class="badge rounded-pill" style="background:#fee2e2;color:#b91c1c;font-size:.7rem;">Hard</span>
+            {% endif %}
+            <span class="text-muted">
+              <i class="bi bi-calendar me-1"></i>{{ trek.start_date | dateformat if trek.start_date else 'Date TBD' }}
+            </span>
+          </div>
+
+          <div class="row g-0 text-center mb-3 py-2 rounded-3" style="background:#f8f9fa;">
+            <div class="col-4 border-end">
+              <p class="mb-0 fw-bold small">{{ trek.available_slots }}</p>
+              <p class="mb-0 text-muted" style="font-size:.68rem;">Available</p>
+            </div>
+            <div class="col-4 border-end">
+              <p class="mb-0 fw-bold small">{{ trek.booked_slots }}</p>
+              <p class="mb-0 text-muted" style="font-size:.68rem;">Booked</p>
+            </div>
+            <div class="col-4">
+              <p class="mb-0 fw-bold small">{{ trek.duration_days }}d</p>
+              <p class="mb-0 text-muted" style="font-size:.68rem;">Duration</p>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between text-muted mb-1" style="font-size:.72rem;">
+              <span>Occupancy</span>
+              <span>{{ trek.occupancy_pct }}%</span>
+            </div>
+            <div class="progress" style="height:5px;border-radius:4px;">
+              <div class="progress-bar" style="width:{{ trek.occupancy_pct }}%;background:#6a3de8;"></div>
+            </div>
+          </div>
+
+          <div class="mt-auto">
+            <a href="{{ url_for('staff.trek_detail', trek_id=trek.id) }}"
+               class="btn btn-success btn-sm w-100 fw-semibold" style="border-radius:8px;">
+              Manage Trek
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="text-center py-5 text-muted">
+    <i class="bi bi-map fs-1 d-block mb-3"></i>
+    <h6 class="fw-semibold">No treks assigned</h6>
+    <p class="small mb-0">Please contact the admin to get assigned to a trek</p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

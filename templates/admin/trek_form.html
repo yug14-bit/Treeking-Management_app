@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Trek — TrailMaster{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-control:focus, .form-select:focus {
+    border-color: #6a3de8 !important;
+    box-shadow: 0 0 0 3px rgba(106,61,232,.12) !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <div class="d-flex align-items-center mb-4 gap-3">
+        <a href="{{ url_for('admin.treks') }}"
+           class="d-flex align-items-center justify-content-center"
+           style="width:36px;height:36px;background:#f8f9fa;border-radius:8px;color:#666;text-decoration:none;">
+          <i class="bi bi-arrow-left"></i>
+        </a>
+        <h4 class="fw-bold mb-0">
+          <i class="bi bi-map me-2" style="color:#6a3de8;"></i>{{ action }} Trek
+        </h4>
+      </div>
+
+      <div class="card border-0 p-4" style="border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+        <form method="POST" enctype="multipart/form-data" novalidate>
+
+          <h6 class="text-muted fw-semibold mb-3 border-bottom pb-2">Basic Information</h6>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Trek Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="name" style="border-radius:8px;"
+                   value="{{ form_data.get('name', '') if action == 'Create' else (form_data.name or '') }}" required/>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Location <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="location" style="border-radius:8px;"
+                   value="{{ form_data.get('location', '') if action == 'Create' else (form_data.location or '') }}" required/>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Description</label>
+            <textarea class="form-control" name="description" rows="3" style="border-radius:8px;">{{ form_data.get('description', '') if action == 'Create' else (form_data.description or '') }}</textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Trek Image / Photo</label>
+            <input type="file" class="form-control" name="image" accept="image/*" style="border-radius:8px;"/>
+            {% if action == 'Edit' and form_data.image %}
+              <div class="mt-2">
+                <span class="small text-muted d-block mb-1">Current image:</span>
+                <img src="{{ url_for('static', filename='uploads/' + form_data.image) }}" 
+                     style="height:80px;border-radius:6px;object-fit:cover;"/>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label fw-semibold">Difficulty</label>
+              <select class="form-select" name="difficulty" style="border-radius:8px;">
+                {% set current_difficulty = form_data.get('difficulty', 'Easy') if action == 'Create' else form_data.difficulty %}
+                {% for d in ['Easy','Moderate','Hard'] %}
+                  <option value="{{ d }}" {% if current_difficulty == d %}selected{% endif %}>
+                    {{ d }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label fw-semibold">Duration (days)</label>
+              <input type="number" class="form-control" name="duration_days" min="1" style="border-radius:8px;"
+                     value="{{ form_data.get('duration_days', 1) if action == 'Create' else (form_data.duration_days or 1) }}"/>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label fw-semibold">Price (₹)</label>
+              <input type="number" class="form-control" name="price" min="0" step="0.01" style="border-radius:8px;"
+                     value="{{ form_data.get('price', 0) if action == 'Create' else (form_data.price or 0) }}"/>
+            </div>
+          </div>
+
+          <h6 class="text-muted fw-semibold mb-3 border-bottom pb-2 mt-2">Slots & Dates</h6>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label fw-semibold">Total Slots</label>
+              <input type="number" class="form-control" name="total_slots" min="1" style="border-radius:8px;"
+                     value="{{ form_data.get('total_slots', 10) if action == 'Create' else (form_data.total_slots or 10) }}"
+                     {% if action == 'Edit' %}readonly{% endif %}/>
+              {% if action == 'Edit' %}
+                <small class="text-muted">Total slots cannot be changed after creation</small>
+              {% endif %}
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label fw-semibold">Start Date</label>
+              <input type="date" class="form-control" name="start_date" style="border-radius:8px;"
+                     value="{{ form_data.get('start_date', '') if action == 'Create' else (form_data.start_date or '') }}"/>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label fw-semibold">End Date</label>
+              <input type="date" class="form-control" name="end_date" style="border-radius:8px;"
+                     value="{{ form_data.get('end_date', '') if action == 'Create' else (form_data.end_date or '') }}"/>
+            </div>
+          </div>
+
+          <h6 class="text-muted fw-semibold mb-3 border-bottom pb-2 mt-2">Extra Details</h6>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">Altitude (metres)</label>
+              <input type="number" class="form-control" name="altitude_m" min="0" style="border-radius:8px;"
+                     value="{{ form_data.get('altitude_m', '') if action == 'Create' else (form_data.altitude_m or '') }}"/>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">Distance (km)</label>
+              <input type="number" class="form-control" name="distance_km" min="0" step="0.1" style="border-radius:8px;"
+                     value="{{ form_data.get('distance_km', '') if action == 'Create' else (form_data.distance_km or '') }}"/>
+            </div>
+          </div>
+
+          <h6 class="text-muted fw-semibold mb-3 border-bottom pb-2 mt-2">Assign Staff</h6>
+          <div class="mb-4">
+            <label class="form-label fw-semibold">Trek Staff</label>
+            <select class="form-select" name="staff_id" style="border-radius:8px;">
+              <option value="">— Assign later —</option>
+              {% set current_staff_id = form_data.get('staff_id', '') if action == 'Create' else (form_data.staff_id or '') %}
+              {% for staff in active_staff %}
+                <option value="{{ staff.id }}"
+                  {% if current_staff_id|string == staff.id|string %}selected{% endif %}>
+                  {{ staff.full_name }} ({{ staff.experience_years or '?' }} yrs exp)
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success px-4" style="border-radius:8px;">
+              <i class="bi bi-save me-2"></i>{{ action }} Trek
+            </button>
+            <a href="{{ url_for('admin.treks') }}" class="btn btn-outline-secondary" style="border-radius:8px;">Cancel</a>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

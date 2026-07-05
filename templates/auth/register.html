@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block title %}Register — TrailMaster{% endblock %}
+
+{% block extra_css %}
+<style>
+  .reg-shell {
+    min-height: calc(100vh - 56px - 50px);
+    padding: 2.5rem 1rem;
+    background:
+      radial-gradient(circle at 10% 10%, rgba(106,61,232,.08) 0%, transparent 45%),
+      radial-gradient(circle at 90% 90%, rgba(59,130,246,.08) 0%, transparent 45%);
+  }
+  .reg-card {
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(76,29,149,.12);
+    border: none;
+  }
+  .reg-toggle {
+    background: #f1edfd;
+    border-radius: 12px;
+    padding: 4px;
+  }
+  .reg-toggle a {
+    border-radius: 9px;
+    font-weight: 600;
+    font-size: .85rem;
+    text-decoration: none;
+    transition: all .15s;
+  }
+  .reg-toggle a.active {
+    background: #fff;
+    color: #6a3de8;
+    box-shadow: 0 2px 8px rgba(76,29,149,.12);
+  }
+  .reg-toggle a:not(.active) { color: #8b84a0; }
+  .reg-card .form-control, .reg-card textarea {
+    border-radius: 10px;
+    border: 1.5px solid #e8e6f3;
+    font-size: .9rem;
+  }
+  .reg-card .form-control:focus, .reg-card textarea:focus {
+    border-color: #6a3de8;
+    box-shadow: 0 0 0 3px rgba(106,61,232,.12);
+  }
+  .reg-submit-btn {
+    background: linear-gradient(135deg, #6a3de8 0%, #4f46e5 55%, #3b82f6 100%);
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    color: #fff;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .reg-submit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(79,70,229,.3);
+    color: #fff;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reg-shell">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6 col-md-8">
+
+        <div class="text-center mb-4">
+          <i class="bi bi-compass" style="font-size:2.2rem;color:#6a3de8;"></i>
+          <h4 class="fw-bold mt-2 mb-1">Create an Account</h4>
+          <p class="text-muted small">
+            {% if role == 'staff' %}
+              Register as Trek Staff — your account will need admin approval.
+            {% else %}
+              Register as a Trekker and start exploring.
+            {% endif %}
+          </p>
+        </div>
+
+        <!-- Role Toggle -->
+        <div class="reg-toggle d-flex gap-2 mb-4">
+          <a href="{{ url_for('auth.register') }}?role=user"
+             class="flex-fill text-center py-2 {% if role != 'staff' %}active{% endif %}">
+            <i class="bi bi-person me-1"></i>Trekker
+          </a>
+          <a href="{{ url_for('auth.register') }}?role=staff"
+             class="flex-fill text-center py-2 {% if role == 'staff' %}active{% endif %}">
+            <i class="bi bi-person-badge me-1"></i>Trek Staff
+          </a>
+        </div>
+
+        <!-- Form Card -->
+        <div class="card reg-card">
+          <div class="card-body p-4">
+            <form method="POST" action="{{ url_for('auth.register') }}?role={{ role }}" novalidate>
+              <input type="hidden" name="role" value="{{ role }}"/>
+
+              <div class="mb-3">
+                <label class="form-label small fw-semibold">Full Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="full_name"
+                       placeholder="Your full name"
+                       value="{{ form_data.get('full_name', '') }}" required/>
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Username <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" name="username"
+                         placeholder="Min 3 characters"
+                         value="{{ form_data.get('username', '') }}" required/>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Phone</label>
+                  <input type="tel" class="form-control" name="phone"
+                         placeholder="Optional"
+                         value="{{ form_data.get('phone', '') }}"/>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label small fw-semibold">Email <span class="text-danger">*</span></label>
+                <input type="email" class="form-control" name="email"
+                       placeholder="you@example.com"
+                       value="{{ form_data.get('email', '') }}" required/>
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Password <span class="text-danger">*</span></label>
+                  <input type="password" class="form-control" name="password"
+                         placeholder="Min 6 characters" required/>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Confirm Password <span class="text-danger">*</span></label>
+                  <input type="password" class="form-control" name="confirm"
+                         placeholder="Repeat password" required/>
+                </div>
+              </div>
+
+              {% if role == 'staff' %}
+              <div class="p-3 rounded-3 mb-3" style="background:#f8f7fc;">
+                <p class="small fw-semibold mb-3" style="color:#6a3de8;">
+                  <i class="bi bi-info-circle me-1"></i>Staff Details
+                </p>
+                <div class="row g-3 mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold">Years of Experience</label>
+                    <input type="number" class="form-control" name="experience_years"
+                           placeholder="e.g. 3" min="0"
+                           value="{{ form_data.get('experience_years', '') }}"/>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold">Certifications</label>
+                    <input type="text" class="form-control" name="certifications"
+                           placeholder="e.g. Wilderness First Aid"
+                           value="{{ form_data.get('certifications', '') }}"/>
+                  </div>
+                </div>
+                <div>
+                  <label class="form-label small fw-semibold">Bio</label>
+                  <textarea class="form-control" name="bio" rows="2"
+                            placeholder="Tell us about yourself...">{{ form_data.get('bio', '') }}</textarea>
+                </div>
+              </div>
+              {% endif %}
+
+              <button type="submit" class="reg-submit-btn w-100 py-2 mt-2">
+                {% if role == 'staff' %}
+                  <i class="bi bi-send me-2"></i>Submit for Approval
+                {% else %}
+                  <i class="bi bi-person-check me-2"></i>Create Account
+                {% endif %}
+              </button>
+
+            </form>
+          </div>
+        </div>
+
+        <p class="text-center text-muted small mt-3">
+          Already have an account?
+          <a href="{{ url_for('auth.login') }}" style="color:#6a3de8;font-weight:600;" class="text-decoration-none">
+            Sign in
+          </a>
+        </p>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

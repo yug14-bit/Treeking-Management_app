@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}Manage Treks — TrailMaster{% endblock %}
+
+{% block extra_css %}
+<style>
+  .action-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 6px 11px;
+    font-size: .76rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: transform .12s, box-shadow .12s;
+    white-space: nowrap;
+  }
+  .action-btn:hover { transform: translateY(-1px); }
+  .action-btn:active { transform: translateY(0); }
+
+  .action-edit   { background: #eef2ff; color: #4338ca; }
+  .action-approve{ background: #e0f2fe; color: #0369a1; }
+  .action-open   { background: #dcfce7; color: #15803d; }
+  .action-close  { background: #fef3c7; color: #b45309; }
+  .action-complete{ background: #312e81; color: #fff; }
+  .action-delete { background: #fee2e2; color: #b91c1c; }
+
+  .action-edit:hover    { box-shadow: 0 4px 10px rgba(67,56,202,.25); }
+  .action-approve:hover { box-shadow: 0 4px 10px rgba(3,105,161,.25); }
+  .action-open:hover    { box-shadow: 0 4px 10px rgba(21,128,61,.25); }
+  .action-close:hover   { box-shadow: 0 4px 10px rgba(180,83,9,.25); }
+  .action-complete:hover{ box-shadow: 0 4px 10px rgba(49,46,129,.35); }
+  .action-delete:hover  { box-shadow: 0 4px 10px rgba(185,28,28,.25); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="fw-bold mb-0">Manage Treks</h4>
+      <p class="text-muted small mb-0">Create, edit, and manage trekking events</p>
+    </div>
+    <a href="{{ url_for('admin.create_trek') }}"
+       class="btn btn-success btn-sm px-3" style="border-radius:8px;">
+      <i class="bi bi-plus-lg me-1"></i>Add Trek
+    </a>
+  </div>
+
+  <!-- Search & Filter -->
+  <form method="GET" class="card border-0 p-3 mb-4"
+        style="border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-6">
+        <input type="text" class="form-control" name="q"
+               placeholder="Search by name or location..." value="{{ q }}"
+               style="border-radius:8px;"/>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select" name="status" style="border-radius:8px;">
+          <option value="">All Statuses</option>
+          {% for s in ['Pending','Approved','Open','Closed','Completed'] %}
+            <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3 d-flex gap-2">
+        <button class="btn btn-success flex-fill fw-semibold" type="submit" style="border-radius:8px;">
+          Search
+        </button>
+        <a href="{{ url_for('admin.treks') }}" class="btn btn-outline-secondary" style="border-radius:8px;">
+          <i class="bi bi-x"></i>
+        </a>
+      </div>
+    </div>
+  </form>
+
+  <!-- Legend for action buttons -->
+  <div class="d-flex align-items-center gap-3 mb-3 flex-wrap" style="font-size:.74rem;">
+    <span class="text-muted fw-semibold">ACTIONS GUIDE:</span>
+    <span><span class="badge rounded-pill" style="background:#eef2ff;color:#4338ca;">Edit</span> modify details</span>
+    <span><span class="badge rounded-pill" style="background:#e0f2fe;color:#0369a1;">Approve</span> Pending → Approved</span>
+    <span><span class="badge rounded-pill" style="background:#dcfce7;color:#15803d;">Open</span> allow bookings</span>
+    <span><span class="badge rounded-pill" style="background:#fef3c7;color:#b45309;">Close</span> stop bookings</span>
+    <span><span class="badge rounded-pill" style="background:#312e81;color:#fff;">Complete</span> mark finished</span>
+  </div>
+
+  <!-- Treks Table -->
+  <div class="card border-0" style="border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0" style="font-size:.87rem;">
+          <thead>
+            <tr style="background:#fafafa;">
+              <th class="px-3 py-2 border-0 text-muted fw-semibold" style="font-size:.72rem;letter-spacing:.4px;">ID</th>
+              <th class="py-2 border-0 text-muted fw-semibold" style="font-size:.72rem;letter-spacing:.4px;">NAME</th>
+              <th class="py-2 border-0 text-muted fw-semibold" style="font-size:.72rem;letter-spacing:.4px;">LOCATION</th>
+              <th class="py-2 border-0 text-muted fw-semibold" style="font-size:.72rem;letter-spacing:.4px;">DIFFICULTY</th>
+              <th class="py-2 border-0 text-muted fw-semibold" style="font-size:.72rem;letter-spacing:.4px;">SLOTS</th>
+              <th class="py-2 border-0 text-muted fw-semibold" style="font-size:.72rem;letter-spacing:.4px;">PRICE</th>
+              <th class="py-2 border-0 text-muted fw-semibold" style="font-size:.72rem;letter-spacing:.4px;">STATUS</th>
+              <th class="py-2 border-0 text-muted fw-semibold" style="font-size:.72rem;letter-spacing:.4px;">STAFF</th>
+              <th class="py-2 border-0 text-muted fw-semibold" style="font-size:.72rem;letter-spacing:.4px;">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for trek in treks %}
+            <tr style="border-top:1px solid #f0f0f0;">
+              <td class="px-3 py-2 text-muted">#{{ trek.id }}</td>
+              <td class="py-2 fw-semibold">{{ trek.name }}</td>
+              <td class="py-2 text-muted">{{ trek.location }}</td>
+              <td class="py-2">
+                {% if trek.difficulty == 'Easy' %}
+                  <span class="badge rounded-pill" style="background:#dcfce7;color:#15803d;font-size:.72rem;">Easy</span>
+                {% elif trek.difficulty == 'Moderate' %}
+                  <span class="badge rounded-pill" style="background:#fef3c7;color:#b45309;font-size:.72rem;">Moderate</span>
+                {% else %}
+                  <span class="badge rounded-pill" style="background:#fee2e2;color:#b91c1c;font-size:.72rem;">Hard</span>
+                {% endif %}
+              </td>
+              <td class="py-2">{{ trek.available_slots }}/{{ trek.total_slots }}</td>
+              <td class="py-2 fw-semibold">{{ trek.price | currency }}</td>
+              <td class="py-2">
+                {% if trek.status == 'Open' %}
+                  <span class="badge rounded-pill" style="background:#dcfce7;color:#15803d;font-size:.72rem;">Open</span>
+                {% elif trek.status == 'Pending' %}
+                  <span class="badge rounded-pill" style="background:#fef3c7;color:#b45309;font-size:.72rem;">Pending</span>
+                {% elif trek.status == 'Approved' %}
+                  <span class="badge rounded-pill" style="background:#e0f2fe;color:#0369a1;font-size:.72rem;">Approved</span>
+                {% elif trek.status == 'Closed' %}
+                  <span class="badge rounded-pill" style="background:#f5f5f5;color:#616161;font-size:.72rem;">Closed</span>
+                {% else %}
+                  <span class="badge rounded-pill" style="background:#ede9fe;color:#5b21b6;font-size:.72rem;">Completed</span>
+                {% endif %}
+              </td>
+              <td class="py-2 text-muted">{{ trek.assigned_staff.full_name if trek.assigned_staff else '—' }}</td>
+              <td class="py-2">
+                <div class="d-flex gap-1 flex-wrap">
+
+                  {% if trek.status != 'Completed' %}
+                  <a href="{{ url_for('admin.edit_trek', trek_id=trek.id) }}"
+                     class="action-btn action-edit" title="Edit trek details">
+                    <i class="bi bi-pencil"></i>Edit
+                  </a>
+                  {% endif %}
+                  
+                  {% if trek.status == 'Pending' %}
+                    <form method="POST" action="{{ url_for('admin.do_approve_trek', trek_id=trek.id) }}">
+                      <button class="action-btn action-approve" title="Approve this trek">
+                        <i class="bi bi-check-circle"></i>Approve
+                      </button>
+                    </form>
+                  {% elif trek.status == 'Approved' %}
+                    <form method="POST" action="{{ url_for('admin.do_open_trek', trek_id=trek.id) }}">
+                      <button class="action-btn action-open" title="Open for bookings">
+                        <i class="bi bi-unlock"></i>Open
+                      </button>
+                    </form>
+                  {% elif trek.status == 'Open' %}
+                    <form method="POST" action="{{ url_for('admin.do_close_trek', trek_id=trek.id) }}">
+                      <button class="action-btn action-close" title="Close bookings">
+                        <i class="bi bi-lock"></i>Close
+                      </button>
+                    </form>
+                  {% endif %}
+
+                  {% if trek.status in ['Open','Closed'] %}
+                    <form method="POST" action="{{ url_for('admin.do_complete_trek', trek_id=trek.id) }}">
+                      <button class="action-btn action-complete" title="Mark as completed">
+                        <i class="bi bi-flag-fill"></i>Complete
+                      </button>
+                    </form>
+                  {% endif %}
+
+                  <form method="POST" action="{{ url_for('admin.delete_trek', trek_id=trek.id) }}"
+                        onsubmit="return confirm('Delete trek {{ trek.name }}? This cannot be undone.')">
+                    <button class="action-btn action-delete" title="Delete this trek">
+                      <i class="bi bi-trash"></i>Delete
+                    </button>
+                  </form>
+
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="9" class="text-center text-muted py-5">No treks found</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

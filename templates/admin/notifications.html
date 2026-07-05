@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Notifications — TrailMaster{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <div class="mb-4">
+        <h4 class="fw-bold mb-0">Notifications</h4>
+        <p class="text-muted small mb-0">Stay updated on your activity</p>
+      </div>
+
+      {% if notifications %}
+        {% for n in notifications %}
+        <div class="card border-0 mb-2" style="border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);
+          border-left:4px solid {% if n.category == 'success' %}#15803d{% elif n.category == 'danger' %}#b91c1c{% elif n.category == 'warning' %}#b45309{% else %}#0369a1{% endif %} !important;">
+          <div class="card-body py-3 px-3">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <p class="mb-0 fw-semibold small">{{ n.title }}</p>
+                <p class="mb-0 text-muted small">{{ n.message }}</p>
+                {% if n.link %}
+                  <a href="{{ n.link }}" class="small text-decoration-none" style="color:#6a3de8;">View details →</a>
+                {% endif %}
+              </div>
+              <small class="text-muted text-nowrap ms-3" style="font-size:.72rem;">{{ n.created_at | dateformat }}</small>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="text-center text-muted py-5">
+          <i class="bi bi-bell-slash fs-1 d-block mb-3"></i>
+          <p class="mb-0">No notifications yet.</p>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}

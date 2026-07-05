@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}My Profile — TrailMaster{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+
+      <div class="mb-4">
+        <h4 class="fw-bold mb-0">My Profile</h4>
+        <p class="text-muted small mb-0">Manage your account details</p>
+      </div>
+
+      <!-- Profile Card -->
+      <div class="card border-0 mb-4"
+           style="border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+
+        <!-- Avatar + Info -->
+        <div class="card-body p-4 text-center border-bottom">
+          <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+               style="width:72px;height:72px;background:#eef2ff;">
+            <i class="bi bi-person fs-2" style="color:#6a3de8;"></i>
+          </div>
+          <h5 class="fw-bold mb-0">{{ current_user.full_name }}</h5>
+          <p class="text-muted small mb-2">@{{ current_user.username }}</p>
+          <span class="badge rounded-pill"
+                style="background:#eef2ff;color:#4338ca;font-size:.78rem;">Trekker</span>
+        </div>
+
+        <!-- Stats -->
+        <div class="row g-0 text-center border-bottom">
+          <div class="col-4 py-3 border-end">
+            <h5 class="fw-bold mb-0" style="color:#6a3de8;">{{ current_user.total_bookings() }}</h5>
+            <p class="text-muted mb-0" style="font-size:.75rem;">Total Bookings</p>
+          </div>
+          <div class="col-4 py-3 border-end">
+            <h5 class="fw-bold mb-0" style="color:#6a3de8;">{{ current_user.completed_treks() }}</h5>
+            <p class="text-muted mb-0" style="font-size:.75rem;">Completed</p>
+          </div>
+          <div class="col-4 py-3">
+            <h5 class="fw-bold mb-0" style="color:#6a3de8;">{{ current_user.created_at | dateformat('%Y') }}</h5>
+            <p class="text-muted mb-0" style="font-size:.75rem;">Member Since</p>
+          </div>
+        </div>
+
+        <!-- Edit Form -->
+        <div class="card-body p-4">
+          <h6 class="fw-semibold mb-3 text-muted small text-uppercase"
+              style="letter-spacing:.5px;">Edit Details</h6>
+          <form method="POST" action="{{ url_for('user.profile') }}">
+
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Full Name</label>
+              <input type="text" class="form-control" name="full_name"
+                     value="{{ current_user.full_name }}"
+                     style="border-radius:8px;" required/>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Email</label>
+              <input type="email" class="form-control"
+                     value="{{ current_user.email }}"
+                     style="border-radius:8px;background:#f8f9fa;" disabled/>
+              <p class="text-muted mb-0 mt-1" style="font-size:.75rem;">Email cannot be changed</p>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Username</label>
+              <input type="text" class="form-control"
+                     value="{{ current_user.username }}"
+                     style="border-radius:8px;background:#f8f9fa;" disabled/>
+              <p class="text-muted mb-0 mt-1" style="font-size:.75rem;">Username cannot be changed</p>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Phone</label>
+              <input type="tel" class="form-control" name="phone"
+                     value="{{ current_user.phone or '' }}"
+                     placeholder="Your phone number"
+                     style="border-radius:8px;"/>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label small fw-semibold">Address</label>
+              <textarea class="form-control" name="address" rows="2"
+                        placeholder="Your address"
+                        style="border-radius:8px;">{{ current_user.address or '' }}</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 fw-semibold py-2"
+                    style="border-radius:8px;">
+              <i class="bi bi-save me-2"></i>Save Changes
+            </button>
+
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

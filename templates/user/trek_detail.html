@@ -1,0 +1,380 @@
+{% extends "base.html" %} {% block title %}{{ trek.name }} — TrekSphere{%
+endblock %} {% block content %}
+<div class="container py-4">
+  <a
+    href="{{ url_for('user.browse_treks') }}"
+    class="d-inline-flex align-items-center text-muted small text-decoration-none mb-3"
+  >
+    <i class="bi bi-arrow-left me-2"></i>Back to Treks
+  </a>
+
+  <div class="row g-4">
+    <!-- Left: Trek Details -->
+    <div class="col-lg-8">
+      <!-- Header Card -->
+      <div
+        class="card border-0 mb-3"
+        style="border-radius: 14px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07)"
+      >
+        <img src="{{ url_for('static', filename='uploads/' + (trek.image or 'trek_default.jpg')) }}" 
+             class="card-img-top" alt="{{ trek.name }}" 
+             style="height: 300px; object-fit: cover; border-top-left-radius: 14px; border-top-right-radius: 14px;">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h3 class="fw-bold mb-1">{{ trek.name }}</h3>
+              <p class="text-muted mb-0">
+                <i class="bi bi-geo-alt me-1"></i>{{ trek.location }}
+              </p>
+            </div>
+            {% if trek.difficulty == 'Easy' %}
+            <span
+              class="badge rounded-pill px-3 py-2"
+              style="background: #e8f5e9; color: #2e7d32"
+              >Easy</span
+            >
+            {% elif trek.difficulty == 'Moderate' %}
+            <span
+              class="badge rounded-pill px-3 py-2"
+              style="background: #fff8e1; color: #f57f17"
+              >Moderate</span
+            >
+            {% else %}
+            <span
+              class="badge rounded-pill px-3 py-2"
+              style="background: #ffebee; color: #c62828"
+              >Hard</span
+            >
+            {% endif %}
+          </div>
+
+          {% if trek.description %}
+          <p class="text-muted mb-4">{{ trek.description }}</p>
+          {% endif %}
+
+          <!-- Stats Grid -->
+          <div class="row g-2 mb-3">
+            <div class="col-6 col-md-3">
+              <div
+                class="p-3 rounded-3 text-center"
+                style="background: #f8f9fa"
+              >
+                <i class="bi bi-clock text-success mb-1 d-block"></i>
+                <p class="fw-bold mb-0 small">{{ trek.duration_days }} Days</p>
+                <p class="text-muted mb-0" style="font-size: 0.7rem">
+                  Duration
+                </p>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div
+                class="p-3 rounded-3 text-center"
+                style="background: #f8f9fa"
+              >
+                <i class="bi bi-people text-success mb-1 d-block"></i>
+                <p class="fw-bold mb-0 small">
+                  {{ trek.available_slots }} Left
+                </p>
+                <p class="text-muted mb-0" style="font-size: 0.7rem">Slots</p>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div
+                class="p-3 rounded-3 text-center"
+                style="background: #f8f9fa"
+              >
+                <i class="bi bi-arrow-up text-success mb-1 d-block"></i>
+                <p class="fw-bold mb-0 small">
+                  {{ trek.altitude_m or '—' }}{% if trek.altitude_m %}m{% endif
+                  %}
+                </p>
+                <p class="text-muted mb-0" style="font-size: 0.7rem">
+                  Altitude
+                </p>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div
+                class="p-3 rounded-3 text-center"
+                style="background: #f8f9fa"
+              >
+                <i class="bi bi-signpost text-success mb-1 d-block"></i>
+                <p class="fw-bold mb-0 small">
+                  {{ trek.distance_km or '—' }}{% if trek.distance_km %} km{%
+                  endif %}
+                </p>
+                <p class="text-muted mb-0" style="font-size: 0.7rem">
+                  Distance
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dates & Staff -->
+          <div class="d-flex flex-wrap gap-4 pt-2 border-top">
+            {% if trek.start_date %}
+            <div class="d-flex align-items-center gap-2 mt-2">
+              <i class="bi bi-calendar-range text-success"></i>
+              <span class="small">
+                <strong>{{ trek.start_date | dateformat }}</strong>
+                {% if trek.end_date %} →
+                <strong>{{ trek.end_date | dateformat }}</strong>{% endif %}
+              </span>
+            </div>
+            {% endif %} {% if trek.assigned_staff %}
+            <div class="d-flex align-items-center gap-2 mt-2">
+              <i class="bi bi-person-badge text-success"></i>
+              <span class="small"
+                >Led by
+                <strong>{{ trek.assigned_staff.full_name }}</strong></span
+              >
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Card -->
+      <div
+        class="card border-0"
+        style="border-radius: 14px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07)"
+      >
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold mb-0">Reviews</h6>
+            {% set avg = trek.average_rating() %} {% if avg > 0 %}
+            <div class="d-flex align-items-center gap-1">
+              {% for i in range(1,6) %}
+              <i
+                class="bi bi-star{% if i <= avg %}-fill{% endif %}"
+                style="color:{% if i <= avg %}#fbc02d{% else %}#e0e0e0{% endif %};font-size:.85rem;"
+              ></i>
+              {% endfor %}
+              <span class="text-muted small ms-1">{{ avg }}/5</span>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Leave Review -->
+          {% if not user_review %} {% set completed_booking =
+          current_user.bookings.filter_by(trek_id=trek.id,
+          status='Completed').first() %} {% if completed_booking %}
+          <div class="p-3 rounded-3 mb-4" style="background: #f8f9fa">
+            <p class="fw-semibold small mb-3">Leave a Review</p>
+            <form
+              method="POST"
+              action="{{ url_for('user.do_review', trek_id=trek.id) }}"
+            >
+              <div class="mb-2">
+                <select
+                  class="form-select form-select-sm w-auto"
+                  name="rating"
+                  required
+                  style="border-radius: 6px"
+                >
+                  <option value="">Rating</option>
+                  {% for i in range(5,0,-1) %}
+                  <option value="{{ i }}">
+                    {{ i }} Star{% if i > 1 %}s{% endif %}
+                  </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="mb-2">
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  name="title"
+                  placeholder="Review title (optional)"
+                  style="border-radius: 6px"
+                />
+              </div>
+              <div class="mb-2">
+                <textarea
+                  class="form-control form-control-sm"
+                  name="body"
+                  rows="2"
+                  placeholder="Share your experience..."
+                  style="border-radius: 6px"
+                ></textarea>
+              </div>
+              <button
+                class="btn btn-success btn-sm fw-semibold px-3"
+                type="submit"
+                style="border-radius: 6px"
+              >
+                Submit Review
+              </button>
+            </form>
+          </div>
+          {% endif %} {% else %}
+          <div
+            class="p-3 rounded-3 mb-4 d-flex align-items-center gap-2"
+            style="background: #e8f5e9"
+          >
+            <i class="bi bi-check-circle text-success"></i>
+            <span class="small text-success"
+              >You rated this trek {{ user_review.rating }}/5. Thanks!</span
+            >
+          </div>
+          {% endif %}
+
+          <!-- Existing Reviews -->
+          {% if reviews %} {% for review in reviews %}
+          <div class="py-3 {% if not loop.last %}border-bottom{% endif %}">
+            <div class="d-flex justify-content-between align-items-start mb-1">
+              <div>
+                <span class="fw-semibold small"
+                  >{{ review.user.full_name }}</span
+                >
+                <div class="d-inline-flex gap-1 ms-2">
+                  {% for i in range(1,6) %}
+                  <i
+                    class="bi bi-star{% if i <= review.rating %}-fill{% endif %}"
+                    style="color:{% if i <= review.rating %}#fbc02d{% else %}#e0e0e0{% endif %};font-size:.7rem;"
+                  ></i>
+                  {% endfor %}
+                </div>
+              </div>
+              <span class="text-muted" style="font-size: 0.75rem"
+                >{{ review.created_at | dateformat }}</span
+              >
+            </div>
+            {% if review.title %}
+            <p class="fw-semibold small mb-1">{{ review.title }}</p>
+            {% endif %} {% if review.body %}
+            <p class="text-muted small mb-0">{{ review.body }}</p>
+            {% endif %}
+          </div>
+          {% endfor %} {% else %}
+          <p class="text-muted small text-center py-3 mb-0">
+            No reviews yet. Be the first!
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Booking Card -->
+    <div class="col-lg-4">
+      <div
+        class="card border-0 sticky-top"
+        style="
+          top: 80px;
+          border-radius: 14px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+        "
+      >
+        <div class="card-body p-4">
+          <div
+            class="d-flex justify-content-between align-items-baseline mb-3 pb-3 border-bottom"
+          >
+            <span class="text-muted small">Price per person</span>
+            <span class="fw-bold text-success fs-4"
+              >{{ trek.price | currency }}</span
+            >
+          </div>
+
+          {% if existing_booking %}
+          <div
+            class="text-center p-3 rounded-3 mb-3"
+            style="background: #e8f5e9"
+          >
+            <i class="bi bi-check-circle-fill text-success fs-4"></i>
+            <p class="fw-semibold mb-0 mt-2 small">Already Booked!</p>
+            <p class="text-muted mb-0" style="font-size: 0.75rem">
+              Ref: {{ existing_booking.booking_ref }}
+            </p>
+          </div>
+          <a
+            href="{{ url_for('user.my_bookings') }}"
+            class="btn btn-outline-success w-100 fw-semibold"
+            style="border-radius: 8px"
+          >
+            View My Bookings
+          </a>
+
+          {% elif trek.is_bookable %}
+          <form
+            method="POST"
+            action="{{ url_for('user.do_book', trek_id=trek.id) }}"
+          >
+            <div class="mb-3">
+              <label class="form-label small fw-semibold"
+                >Number of Persons</label
+              >
+              <input
+                type="number"
+                class="form-control"
+                name="num_persons"
+                value="1"
+                min="1"
+                max="{{ trek.available_slots }}"
+                required
+                style="border-radius: 8px"
+              />
+              <p class="text-muted mb-0 mt-1" style="font-size: 0.75rem">
+                {{ trek.available_slots }} slots available
+              </p>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold"
+                >Emergency Contact Name</label
+              >
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                name="emergency_name"
+                placeholder="Full name"
+                style="border-radius: 8px"
+              />
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold"
+                >Emergency Contact Phone</label
+              >
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                name="emergency_phone"
+                placeholder="Phone number"
+                style="border-radius: 8px"
+              />
+            </div>
+            <div class="mb-4">
+              <label class="form-label small fw-semibold"
+                >Special Requests</label
+              >
+              <textarea
+                class="form-control form-control-sm"
+                name="special_requests"
+                rows="2"
+                placeholder="Any requirements..."
+                style="border-radius: 8px"
+              ></textarea>
+            </div>
+            <button
+              type="submit"
+              class="btn btn-success w-100 fw-semibold py-2"
+              style="border-radius: 8px"
+            >
+              <i class="bi bi-check-circle me-2"></i>Confirm Booking
+            </button>
+          </form>
+
+          {% else %}
+          <div class="text-center p-3 rounded-3" style="background: #f8f9fa">
+            <i class="bi bi-lock text-muted fs-4"></i>
+            <p class="text-muted mb-0 mt-2 small">
+              {% if trek.available_slots == 0 %} Trek is fully booked {% else %}
+              Trek is not open for booking {% endif %}
+            </p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

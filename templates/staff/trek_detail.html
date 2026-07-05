@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block title %}{{ trek.name }} — Staff{% endblock %}
+
+{% block extra_css %}
+<style>
+  .action-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: .85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .action-btn:hover { transform: translateY(-1px); }
+  .action-open     { background: #dcfce7; color: #15803d; }
+  .action-open:hover     { box-shadow: 0 4px 12px rgba(21,128,61,.25); }
+  .action-close    { background: #fef3c7; color: #b45309; }
+  .action-close:hover    { box-shadow: 0 4px 12px rgba(180,83,9,.25); }
+  .action-complete { background: #312e81; color: #fff; }
+  .action-complete:hover { box-shadow: 0 4px 12px rgba(49,46,129,.35); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ url_for('staff.my_treks') }}"
+       class="d-flex align-items-center justify-content-center"
+       style="width:36px;height:36px;background:#f8f9fa;border-radius:8px;color:#666;">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+    <div>
+      <h4 class="fw-bold mb-0">{{ trek.name }}</h4>
+      <p class="text-muted small mb-0"><i class="bi bi-geo-alt me-1"></i>{{ trek.location }}</p>
+    </div>
+    <div class="ms-auto">
+      {% if trek.status == 'Open' %}
+        <span class="badge rounded-pill px-3 py-2" style="background:#dcfce7;color:#15803d;">Open</span>
+      {% elif trek.status == 'Closed' %}
+        <span class="badge rounded-pill px-3 py-2" style="background:#f5f5f5;color:#616161;">Closed</span>
+      {% elif trek.status == 'Completed' %}
+        <span class="badge rounded-pill px-3 py-2" style="background:#ede9fe;color:#5b21b6;">Completed</span>
+      {% else %}
+        <span class="badge rounded-pill px-3 py-2" style="background:#e0f2fe;color:#0369a1;">{{ trek.status }}</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Left: Info + Controls -->
+    <div class="col-lg-4">
+
+      <!-- Trek Info -->
+      <div class="card border-0 mb-3" style="border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+        <div class="card-body p-3">
+          <h6 class="fw-bold mb-3 small text-uppercase text-muted" style="letter-spacing:.5px;">Trek Details</h6>
+          <div class="d-flex flex-column gap-2" style="font-size:.85rem;">
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Difficulty</span>
+              <span class="fw-semibold">{{ trek.difficulty }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Duration</span>
+              <span class="fw-semibold">{{ trek.duration_days }} days</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Start Date</span>
+              <span class="fw-semibold">{{ trek.start_date | dateformat if trek.start_date else '—' }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">End Date</span>
+              <span class="fw-semibold">{{ trek.end_date | dateformat if trek.end_date else '—' }}</span>
+            </div>
+            <hr class="my-1"/>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Total Slots</span>
+              <span class="fw-semibold">{{ trek.total_slots }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Booked</span>
+              <span class="fw-semibold" style="color:#b91c1c;">{{ trek.booked_slots }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Available</span>
+              <span class="fw-semibold" style="color:#15803d;">{{ trek.available_slots }}</span>
+            </div>
+            <hr class="my-1"/>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Price</span>
+              <span class="fw-bold" style="color:#6a3de8;">{{ trek.price | currency }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Update Slots -->
+      {% if trek.status in ['Open', 'Approved'] %}
+      <div class="card border-0 mb-3" style="border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+        <div class="card-body p-3">
+          <h6 class="fw-bold mb-3 small text-uppercase text-muted" style="letter-spacing:.5px;">Update Slots</h6>
+          <form method="POST" action="{{ url_for('staff.update_slots', trek_id=trek.id) }}">
+            <div class="input-group mb-2">
+              <input type="number" class="form-control" name="available_slots"
+                     value="{{ trek.available_slots }}" min="0" max="{{ trek.total_slots }}"
+                     style="border-radius:8px 0 0 8px;"/>
+              <button class="btn btn-success" type="submit" style="border-radius:0 8px 8px 0;">Update</button>
+            </div>
+            <p class="text-muted mb-0" style="font-size:.75rem;">Max: {{ trek.total_slots }} total slots</p>
+          </form>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Status Actions -->
+      <div class="card border-0" style="border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+        <div class="card-body p-3">
+          <h6 class="fw-bold mb-3 small text-uppercase text-muted" style="letter-spacing:.5px;">Trek Status</h6>
+          <div class="d-flex flex-column gap-2">
+            {% if trek.status in ['Approved', 'Closed'] %}
+              <form method="POST" action="{{ url_for('staff.do_open_trek', trek_id=trek.id) }}">
+                <button class="action-btn action-open" type="submit">
+                  <i class="bi bi-unlock"></i>Open Trek
+                </button>
+              </form>
+            {% endif %}
+            {% if trek.status == 'Open' %}
+              <form method="POST" action="{{ url_for('staff.do_close_trek', trek_id=trek.id) }}">
+                <button class="action-btn action-close" type="submit">
+                  <i class="bi bi-lock"></i>Close Trek
+                </button>
+              </form>
+            {% endif %}
+            {% if trek.status in ['Open', 'Closed'] %}
+              <form method="POST" action="{{ url_for('staff.do_complete_trek', trek_id=trek.id) }}"
+                    onsubmit="return confirm('Mark this trek as completed?')">
+                <button class="action-btn action-complete" type="submit">
+                  <i class="bi bi-flag-fill"></i>Mark as Completed
+                </button>
+              </form>
+            {% endif %}
+            {% if trek.status == 'Completed' %}
+              <div class="text-center py-2">
+                <i class="bi bi-check-circle-fill" style="color:#15803d;font-size:1.6rem;"></i>
+                <p class="text-muted small mb-0 mt-1">Trek completed</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right: Participants -->
+    <div class="col-lg-8">
+      <div class="card border-0" style="border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+        <div class="card-body p-0">
+          <div class="d-flex justify-content-between align-items-center px-3 pt-3 pb-2">
+            <div>
+              <h6 class="fw-bold mb-0">Participants</h6>
+              <p class="text-muted small mb-0">Booked trekkers for this trek</p>
+            </div>
+            <span class="badge rounded-pill" style="background:#dcfce7;color:#15803d;">
+              {{ participants | length }}
+            </span>
+          </div>
+          <hr class="my-0"/>
+          <div class="table-responsive">
+            <table class="table align-middle mb-0" style="font-size:.86rem;">
+              <thead>
+                <tr style="background:#fafafa;">
+                  <th class="px-3 py-2 border-0 text-muted fw-semibold" style="font-size:.72rem;letter-spacing:.4px;">REF</th>
+                  <th class="py-2 border-0 text-muted fw-semibold" style="font-size:.72rem;letter-spacing:.4px;">NAME</th>
+                  <th class="py-2 border-0 text-muted fw-semibold" style="font-size:.72rem;letter-spacing:.4px;">CONTACT</th>
+                  <th class="py-2 border-0 text-muted fw-semibold" style="font-size:.72rem;letter-spacing:.4px;">PERSONS</th>
+                  <th class="py-2 border-0 text-muted fw-semibold" style="font-size:.72rem;letter-spacing:.4px;">EMERGENCY</th>
+                  <th class="py-2 border-0 text-muted fw-semibold" style="font-size:.72rem;letter-spacing:.4px;">STATUS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for booking in participants %}
+                <tr style="border-top:1px solid #f0f0f0;">
+                  <td class="px-3 py-2"><code style="font-size:.78rem;">{{ booking.booking_ref }}</code></td>
+                  <td class="py-2">
+                    <p class="mb-0 fw-semibold">{{ booking.user.full_name }}</p>
+                    <p class="mb-0 text-muted" style="font-size:.75rem;">{{ booking.user.email }}</p>
+                  </td>
+                  <td class="py-2 text-muted">{{ booking.user.phone or '—' }}</td>
+                  <td class="py-2">{{ booking.num_persons }}</td>
+                  <td class="py-2 text-muted" style="font-size:.78rem;">
+                    {% if booking.emergency_contact_name %}
+                      {{ booking.emergency_contact_name }}<br>
+                      <span style="font-size:.72rem;">{{ booking.emergency_contact_phone or '' }}</span>
+                    {% else %}—{% endif %}
+                  </td>
+                  <td class="py-2">
+                    {% if booking.status == 'Booked' %}
+                      <span class="badge rounded-pill" style="background:#dcfce7;color:#15803d;font-size:.72rem;">Booked</span>
+                    {% elif booking.status == 'Completed' %}
+                      <span class="badge rounded-pill" style="background:#f5f5f5;color:#616161;font-size:.72rem;">Completed</span>
+                    {% else %}
+                      <span class="badge rounded-pill" style="background:#fee2e2;color:#b91c1c;font-size:.72rem;">{{ booking.status }}</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="6" class="text-center text-muted py-4">No participants yet</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — TrailMaster{% endblock %}
+
+{% block extra_css %}
+<style>
+  .gradient-title {
+    background: linear-gradient(135deg, #1f2937 30%, var(--text-muted) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 2.8rem;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+  }
+  
+  /* Filter Pills */
+  .pill-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+  }
+  .pill-item {
+    background-color: #ffffff;
+    border: 1.5px solid var(--border-color);
+    color: var(--text-muted);
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .pill-item:hover {
+    color: var(--text-main);
+    border-color: #9ca3af;
+  }
+  .pill-item.active {
+    background-color: rgba(106, 61, 232, 0.08);
+    border-color: var(--tm-purple);
+    color: var(--tm-purple);
+  }
+
+  /* Stat Indicator Capsule Lists */
+  .overview-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    color: #fff;
+    text-decoration: none;
+    transition: transform 0.15s ease;
+  }
+  .overview-indicator:hover {
+    transform: translateY(-2px);
+    color: #fff;
+  }
+  .overview-green  { background-color: #10b981; }
+  .overview-blue   { background-color: #3b82f6; }
+  .overview-red    { background-color: #ef4444; }
+  .overview-orange { background-color: #f59e0b; }
+
+  /* Body condition style lists */
+  .appointment-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    margin-bottom: 12px;
+    color: #fff;
+    text-decoration: none;
+    transition: transform 0.15s ease;
+  }
+  .appointment-card:hover {
+    transform: translateY(-2px);
+    color: #fff;
+  }
+  .appointment-red  { background-color: #f43f5e; }
+  .appointment-blue { background-color: #06b6d4; }
+
+  /* BMI progress bar styling */
+  .bmi-value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .progress-scale {
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #3b82f6, #10b981, #f59e0b, #ef4444);
+    margin-top: 15px;
+    position: relative;
+  }
+  .progress-marker {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background-color: #fff;
+    border-radius: 50%;
+    top: -2px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+    border: 1px solid #d1d5db;
+  }
+
+  /* Graphic details overlay */
+  .hero-graphic-card {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    height: 380px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  }
+  .hero-graphic-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.8);
+  }
+  .hero-overlay-badge {
+    position: absolute;
+    bottom: 25px;
+    left: 25px;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 14px 20px;
+    width: 220px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+
+  <!-- Header Section -->
+  <div class="mb-4">
+    <span class="text-muted small text-uppercase fw-semibold" style="letter-spacing: 0.5px;">Dashboard</span>
+    <h5 class="fw-bold mb-0">Welcome back, {{ current_user.full_name.split()[0] }} 👋</h5>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Hero Overview & Available Treks -->
+    <div class="col-lg-7">
+      
+      <!-- Difficulty Pill Selection -->
+      <div class="pill-nav">
+        <a href="{{ url_for('user.browse_treks') }}" class="pill-item active">All Treks</a>
+        <a href="{{ url_for('user.browse_treks') }}?difficulty=Easy" class="pill-item">Easy</a>
+        <a href="{{ url_for('user.browse_treks') }}?difficulty=Moderate" class="pill-item">Moderate</a>
+        <a href="{{ url_for('user.browse_treks') }}?difficulty=Hard" class="pill-item">Hard</a>
+      </div>
+
+      <!-- Overview Header -->
+      <h1 class="gradient-title mb-4">Adventure<br>Overview</h1>
+
+      <!-- Main Visual Graphic Card -->
+      <div class="hero-graphic-card mb-4">
+        {% set featured_trek = open_treks[0] if open_treks else None %}
+        <img class="hero-graphic-img" 
+             src="{{ url_for('static', filename='uploads/' + (featured_trek.image if featured_trek else 'trek_default.jpg')) }}" 
+             alt="Himalayan Trail">
+        
+        {% if featured_trek %}
+          <div class="hero-overlay-badge">
+            <span class="text-muted small d-block mb-1">Featured Expedition</span>
+            <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.92rem;">{{ featured_trek.name }}</h6>
+            <span class="badge rounded-pill text-white mt-1" style="background: var(--tm-gradient); font-size: 0.68rem;">
+              {{ featured_trek.difficulty }} • {{ featured_trek.duration_days }} Days
+            </span>
+          </div>
+        {% else %}
+          <div class="hero-overlay-badge">
+            <span class="text-muted small d-block">No Active Expedition</span>
+            <h6 class="fw-bold mb-0 text-dark">Find Your Trek Today</h6>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Quick Section: Available Treks List -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold mb-0">Recommended Adventures</h6>
+        <a href="{{ url_for('user.browse_treks') }}" class="small fw-semibold text-decoration-none" style="color: var(--tm-purple);">
+          View all <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+      </div>
+      
+      <div class="row g-3">
+        {% for trek in open_treks[:2] %}
+        <div class="col-md-6">
+          <div class="card h-100 border-0" style="border-radius:16px;">
+            <img src="{{ url_for('static', filename='uploads/' + (trek.image or 'trek_default.jpg')) }}" 
+                 class="card-img-top" alt="{{ trek.name }}" 
+                 style="height: 120px; object-fit: cover; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+            <div class="card-body p-3 d-flex flex-column">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="fw-bold mb-0" style="font-size:0.9rem;">{{ trek.name }}</h6>
+                <span class="badge rounded-pill" 
+                      style="background:{% if trek.difficulty == 'Easy' %}rgba(16,185,129,0.12){% elif trek.difficulty == 'Moderate' %}rgba(245,158,11,0.12){% else %}rgba(239,68,68,0.12){% endif %};
+                             color:{% if trek.difficulty == 'Easy' %}#10b981{% elif trek.difficulty == 'Moderate' %}#f59e0b{% else %}#ef4444{% endif %};
+                             font-size: 0.68rem; padding: 4px 8px;">
+                  {{ trek.difficulty }}
+                </span>
+              </div>
+              <p class="text-muted small mb-2"><i class="bi bi-geo-alt me-1"></i>{{ trek.location }}</p>
+              <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top border-secondary-subtle">
+                <span class="fw-bold small text-success">{{ trek.price | currency }}</span>
+                <a href="{{ url_for('user.trek_detail', trek_id=trek.id) }}" class="btn btn-success btn-sm px-3" style="font-size: 0.76rem; border-radius: 8px;">
+                  Detail
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+          <div class="card border-0 py-4 text-center text-muted">
+            <i class="bi bi-binoculars fs-3 mb-2"></i>
+            <p class="small mb-0">No treks open right now.</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+    </div>
+
+    <!-- Right Column: Stats & Bookings (Mimics Medical Widgets) -->
+    <div class="col-lg-5">
+      
+      <!-- Metric: Fitness index (BMI Card layout) -->
+      <div class="card border-0 p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold mb-0 small text-uppercase text-muted" style="letter-spacing: 0.5px;">Trek Readiness Index</h6>
+          <span class="badge bg-success bg-opacity-10 text-success rounded-pill" style="font-size:0.7rem;">Active Profile</span>
+        </div>
+        <div class="bmi-value">85.0 <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-muted);">Score</span></div>
+        <div class="progress-scale">
+          <div class="progress-marker" style="left: 80%;"></div>
+        </div>
+        <div class="d-flex justify-content-between text-muted small mt-2" style="font-size: 0.72rem;">
+          <span>Beginner</span>
+          <span>Moderate</span>
+          <span>Experienced</span>
+          <span>Elite</span>
+        </div>
+      </div>
+
+      <!-- Stat Overview Capsules (Medical Capsule list style) -->
+      <div class="mb-4">
+        <h6 class="fw-bold text-muted small text-uppercase mb-3" style="letter-spacing: 0.5px;">Overview Stats</h6>
+        
+        <a href="{{ url_for('user.my_bookings') }}" class="overview-indicator overview-green">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-journal-check fs-5"></i>
+            <span class="fw-bold small">Active Bookings</span>
+          </div>
+          <span class="fw-extrabold">{{ my_bookings | length }}</span>
+        </a>
+
+        <a href="{{ url_for('user.my_bookings') }}" class="overview-indicator overview-blue">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-award fs-5"></i>
+            <span class="fw-bold small">Completed Treks</span>
+          </div>
+          <span class="fw-extrabold">{{ completed_count }}</span>
+        </a>
+
+        <div class="overview-indicator overview-orange">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-activity fs-5"></i>
+            <span class="fw-bold small">Overall Progress</span>
+          </div>
+          <span class="fw-extrabold">Level 3</span>
+        </div>
+      </div>
+
+      <!-- My Bookings Capsule Cards (Medical Appointments style) -->
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold text-muted small text-uppercase" style="letter-spacing: 0.5px;">My Expeditions</h6>
+          <a href="{{ url_for('user.my_bookings') }}" class="small fw-semibold text-decoration-none" style="color: var(--tm-purple);">View All</a>
+        </div>
+        
+        {% if my_bookings %}
+          {% for b in my_bookings[:2] %}
+            <a href="{{ url_for('user.trek_detail', trek_id=b.trek.id) }}" 
+               class="appointment-card {% if loop.index0 % 2 == 0 %}appointment-red{% else %}appointment-blue{% endif %}">
+              <div class="avatar-circle" style="background-color: rgba(255,255,255,0.2);">
+                <i class="bi bi-geo-alt"></i>
+              </div>
+              <div class="flex-grow-1">
+                <h6 class="fw-bold mb-0 small" style="line-height:1.2;">{{ b.trek.name }}</h6>
+                <span class="text-white opacity-75" style="font-size:0.74rem;">Ref: {{ b.booking_ref }}</span>
+              </div>
+              <i class="bi bi-arrow-right-short fs-4"></i>
+            </a>
+          {% endfor %}
+        {% else %}
+          <div class="card border-0 py-4 text-center text-muted" style="border-radius:16px;">
+            <i class="bi bi-journal-x fs-3 mb-2"></i>
+            <p class="small mb-0">No active bookings yet.</p>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
