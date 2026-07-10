@@ -11,7 +11,7 @@ Usage:
 """
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from flask import Flask, redirect, url_for
 from flask_login import LoginManager
 from models__1 import db, User, AccountStatus
@@ -169,7 +169,6 @@ def _register_template_helpers(app: Flask) -> None:
         BookingStatus=BookingStatus,
         AccountStatus=AccountStatus,
         Role=Role,
-        now=datetime.utcnow(),
     )
 
     # ----------------------------------------------------------------
@@ -214,6 +213,7 @@ def _register_template_helpers(app: Flask) -> None:
             ).count()
         return {
             "unread_notifications": unread_count,
+            "now": datetime.now(timezone.utc),
         }
 
 

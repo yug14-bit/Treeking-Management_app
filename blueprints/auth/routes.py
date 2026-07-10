@@ -89,18 +89,22 @@ def register():
         requested_role = Role.USER
 
     if request.method == "POST":
-        full_name  = request.form.get("full_name",  "").strip()
-        username   = request.form.get("username",   "").strip()
-        email      = request.form.get("email",      "").strip().lower()
-        phone      = request.form.get("phone",      "").strip()
-        password   = request.form.get("password",   "")
-        confirm    = request.form.get("confirm",    "")
-        role       = request.form.get("role",       Role.USER)
+        full_name = request.form.get("full_name",  "").strip()
+        username = request.form.get("username",   "").strip()
+        email = request.form.get("email",      "").strip().lower()
+        phone = request.form.get("phone",      "").strip()
+        password = request.form.get("password",   "")
+        confirm = request.form.get("confirm",    "")
+        role = request.form.get("role",       Role.USER)
         experience = request.form.get("experience_years", "").strip()
-        certs      = request.form.get("certifications",   "").strip()
-        bio        = request.form.get("bio",               "").strip()
+        certs = request.form.get("certifications",   "").strip()
+        bio  = request.form.get("bio",               "").strip()
 
         errors = []
+        if phone and not phone.isdigit():
+            errors.append("Phone number must contain digit only")
+        if phone and len(phone) not in range(10, 14):
+            errors.append("Phone number must be between 10 and 13 digits")
 
         if not full_name:
             errors.append("Full name is required.")
@@ -133,17 +137,17 @@ def register():
         new_user = User(
             full_name = full_name,
             username  = username,
-            email     = email,
-            phone     = phone or None,
-            role      = role,
-            status    = status,
+            email = email,
+            phone = phone or None,
+            role = role,
+            status = status,
         )
         new_user.set_password(password)
 
         if role == Role.STAFF:
             new_user.experience_years = int(experience) if experience.isdigit() else None
-            new_user.certifications   = certs or None
-            new_user.bio              = bio   or None
+            new_user.certifications = certs or None
+            new_user.bio = bio   or None
 
         db.session.add(new_user)
         db.session.commit()
@@ -156,15 +160,12 @@ def register():
 
         return redirect(url_for("auth.login"))
 
-    return render_template("auth/register.html",
-                           role=requested_role,
-                           form_data={})
+    return render_template("auth/register.html", role=requested_role, form_data={})
 
 
 # ---------------------------------------------------------------------------
 # LOGOUT
 # ---------------------------------------------------------------------------
-
 @auth_bp.route("/logout")
 @login_required
 def logout():

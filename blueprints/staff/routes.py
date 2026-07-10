@@ -47,9 +47,7 @@ def dashboard():
         t.bookings.filter_by(status=BookingStatus.BOOKED).count()
         for t in assigned
     )
-    return render_template("staff/dashboard.html",
-                           assigned_treks=assigned,
-                           total_participants=total_participants)
+    return render_template("staff/dashboard.html", assigned_treks=assigned, total_participants=total_participants)
 
 
 # ---------------------------------------------------------------------------
@@ -80,9 +78,7 @@ def trek_detail(trek_id):
         Booking.status != BookingStatus.CANCELLED
     ).all()
 
-    return render_template("staff/trek_detail.html",
-                           trek=trek,
-                           participants=participants)
+    return render_template("staff/trek_detail.html", trek=trek, participants=participants)
 
 
 # ---------------------------------------------------------------------------

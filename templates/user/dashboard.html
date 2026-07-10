@@ -160,7 +160,6 @@
 
       <!-- Main Visual Graphic Card -->
       <div class="hero-graphic-card mb-4">
-        {% set featured_trek = open_treks[0] if open_treks else None %}
         <img class="hero-graphic-img" 
              src="{{ url_for('static', filename='uploads/' + (featured_trek.image if featured_trek else 'trek_default.jpg')) }}" 
              alt="Himalayan Trail">
@@ -190,7 +189,8 @@
       </div>
       
       <div class="row g-3">
-        {% for trek in open_treks[:2] %}
+        {% set recommended = (open_treks | rejectattr('id', 'equalto', featured_trek.id) | list) if featured_trek else open_treks %}
+        {% for trek in recommended[:2] %}
         <div class="col-md-6">
           <div class="card h-100 border-0" style="border-radius:16px;">
             <img src="{{ url_for('static', filename='uploads/' + (trek.image or 'trek_default.jpg')) }}" 
@@ -237,9 +237,9 @@
           <h6 class="fw-bold mb-0 small text-uppercase text-muted" style="letter-spacing: 0.5px;">Trek Readiness Index</h6>
           <span class="badge bg-success bg-opacity-10 text-success rounded-pill" style="font-size:0.7rem;">Active Profile</span>
         </div>
-        <div class="bmi-value">85.0 <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-muted);">Score</span></div>
+        <div class="bmi-value">{{ readiness_score }} <span style="font-size: 0.9rem; font-weight: 500; color: var(--text-muted);">Score</span></div>
         <div class="progress-scale">
-          <div class="progress-marker" style="left: 80%;"></div>
+          <div class="progress-marker" style="left: {{ readiness_score }}%;"></div>
         </div>
         <div class="d-flex justify-content-between text-muted small mt-2" style="font-size: 0.72rem;">
           <span>Beginner</span>
@@ -274,7 +274,7 @@
             <i class="bi bi-activity fs-5"></i>
             <span class="fw-bold small">Overall Progress</span>
           </div>
-          <span class="fw-extrabold">Level 3</span>
+          <span class="fw-extrabold">{{ readiness_level }}</span>
         </div>
       </div>
 

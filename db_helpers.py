@@ -140,7 +140,6 @@ def complete_booking(booking: Booking) -> tuple[bool, str]:
 # ---------------------------------------------------------------------------
 # TREK STATUS TRANSITIONS
 # ---------------------------------------------------------------------------
-
 def approve_trek(trek: Trek) -> tuple[bool, str]:
     if trek.status != TrekStatus.PENDING:
         return False, "Only Pending treks can be approved."
@@ -286,9 +285,7 @@ def update_available_slots(trek: Trek, new_available: int, staff: User) -> tuple
 # REVIEW
 # ---------------------------------------------------------------------------
 
-def add_review(user: User, trek: Trek,
-               rating: int, title: str = None,
-               body: str = None) -> tuple[bool, str, "Review | None"]:
+def add_review(user: User, trek: Trek, rating: int, title: str = None, body: str = None) -> tuple[bool, str, "Review | None"]:
     """
     User can review only after their booking is Completed.
     """
@@ -330,12 +327,12 @@ def _notify(user: User, title: str, message: str, category: str = "info", link: 
 # ---------------------------------------------------------------------------
 def get_dashboard_stats() -> dict:
     from sqlalchemy import func
-    total_treks    = Trek.query.count()
-    total_users    = User.query.filter_by(role=Role.USER).count()
-    total_staff    = User.query.filter_by(role=Role.STAFF).count()
+    total_treks  = Trek.query.count()
+    total_users = User.query.filter_by(role=Role.USER).count()
+    total_staff = User.query.filter_by(role=Role.STAFF).count()
     total_bookings = Booking.query.count()
-    open_treks     = Trek.query.filter_by(status=TrekStatus.OPEN).count()
-    pending_staff  = User.query.filter(
+    open_treks = Trek.query.filter_by(status=TrekStatus.OPEN).count()
+    pending_staff = User.query.filter(
         User.role == Role.STAFF,
         User.status == AccountStatus.PENDING
     ).count()
@@ -356,18 +353,19 @@ def get_dashboard_stats() -> dict:
     )
 
     return {
-        "total_treks":    total_treks,
-        "total_users":    total_users,
-        "total_staff":    total_staff,
+        "total_treks": total_treks,
+        "total_users": total_users,
+        "total_staff": total_staff,
         "total_bookings": total_bookings,
-        "open_treks":     open_treks,
-        "pending_staff":  pending_staff,
+        "open_treks": open_treks,
+        "pending_staff": pending_staff,
         "total_revenue":  round(revenue, 2),
-        "popular_treks":  popular,
+        "popular_treks": popular,
     }
 
 #----------------------------
 #CHART JS
+#----------------------------
 def get_chart_data() -> dict:
     """
     Prepares data for the admin dashboard charts.

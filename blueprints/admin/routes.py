@@ -34,23 +34,6 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
-
-# ---------------------------------------------------------------------------
-# DASHBOARD
-# ---------------------------------------------------------------------------
-# @admin_bp.route("/dashboard")
-# @login_required
-# @admin_required
-# def dashboard():
-#     stats = get_dashboard_stats()
-#     pending_staff = User.query.filter_by(role=Role.STAFF, status=AccountStatus.PENDING).all()
-#     recent_bookings = Booking.query.order_by(Booking.booking_date.desc()).limit(8).all()
-#     return render_template("admin/dashboard.html",
-#                            stats=stats,
-#                            pending_staff=pending_staff,
-#                            recent_bookings=recent_bookings)
-
-
 # ---------------------------------------------------------------------------
 # NOTIFICATIONS
 # ---------------------------------------------------------------------------
@@ -63,7 +46,6 @@ def notifications():
         n.is_read = True
     db.session.commit()
     return render_template("admin/notifications.html", notifications=notifs)
-
 
 # ---------------------------------------------------------------------------
 # TREK MANAGEMENT
@@ -129,6 +111,9 @@ def create_trek():
         # additional few quality checks
         if isinstance(total_slots, int) and total_slots < 1:
             errors.append("Total slots can not be negative")
+        
+        if isinstance(price, float) and price < 0:
+            errors.append("Price cannot be negative.")
             
         if isinstance(duration, int) and duration < 1:
             errors.append("Duration must be at least 1 day.")
@@ -142,7 +127,6 @@ def create_trek():
                     errors.append("Distance can not be negative")
             except:
                 errors.append("Distance must be a valid number")
-
 
         # Parse date strings → Python date objects (SQLite requires this)
         start_date = None
@@ -221,13 +205,24 @@ def edit_trek(trek_id):
         return redirect(url_for("admin.treks"))
     
     active_staff = User.query.filter_by(role=Role.STAFF, status=AccountStatus.ACTIVE).all()
-
     if request.method == "POST":
         trek.name = request.form.get("name", trek.name).strip()
         trek.location = request.form.get("location", trek.location).strip()
         trek.description = request.form.get("description", "").strip() or None
         trek.difficulty = request.form.get("difficulty", trek.difficulty)
-        trek.price = float(request.form.get("price", trek.price) or 0)
+        # trek.price = float(request.form.get("price", trek.price) or 0)
+        price_str = request.form.get("price", "").strip()
+        if price_str:
+            try:
+                new_price = float(price_str)
+                if new_price < 0:
+                    flash("Price cannot be negative. Price left unchanged.", "danger")
+                else:
+                    trek.price = new_price
+            except ValueError:
+                flash("Invalid price value. Price left unchanged.", "danger")
+
+
         start_date_str = request.form.get("start_date", "").strip() or None
         end_date_str = request.form.get("end_date",   "").strip() or None
         staff_id = request.form.get("staff_id")   or None
@@ -424,20 +419,6 @@ def do_unblacklist(user_id):
 # ---------------------------------------------------------------------------
 # BOOKINGS
 # ---------------------------------------------------------------------------
-# @admin_bp.route("/bookings")
-# @login_required
-# @admin_required
-# def bookings():
-#     q = request.args.get("q", "").strip()
-#     query = Booking.query
-#     if q:
-#         query = query.join(User).join(Trek).filter(
-#             User.full_name.ilike(f"%{q}%") |
-#             Trek.name.ilike(f"%{q}%")      |
-#             Booking.booking_ref.ilike(f"%{q}%")
-#         )
-#     all_bookings = query.order_by(Booking.booking_date.desc()).all()
-#     return render_template("admin/bookings.html", bookings=all_bookings, q=q)
 @admin_bp.route("/bookings")
 @login_required
 @admin_required
