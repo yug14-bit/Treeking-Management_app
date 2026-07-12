@@ -208,9 +208,8 @@ Routes are split into 5 Blueprints (auth, admin, staff, user, api) to keep the c
 
 ## 👨‍💻 Author
 
-- **Name:** _______________
-- **Roll Number:** _______________
-- **Email:** _______________
+- **Name:** Yug Poniya
+- **Roll Number:** 24f2003357
 - **Course:** IIT Madras BS Degree — MAD1 (Modern Application Development)
 
 ---
