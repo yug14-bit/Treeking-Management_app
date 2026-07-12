@@ -57,9 +57,19 @@ def dashboard():
 @login_required
 @staff_required
 def my_treks():
-    assigned = Trek.query.filter_by(staff_id=current_user.id)\
-                         .order_by(Trek.start_date).all()
-    return render_template("staff/my_treks.html", treks=assigned)
+    q = request.args.get("q", "").strip()
+
+    query = Trek.query.filter_by(staff_id=current_user.id)
+    if q:
+        query = query.filter(
+            db.or_(
+                Trek.name.ilike(f"%{q}%"),
+                Trek.location.ilike(f"%{q}%"),
+            )
+        )
+
+    assigned = query.order_by(Trek.start_date).all()
+    return render_template("staff/my_treks.html", treks=assigned, search_query=q)
 
 
 # ---------------------------------------------------------------------------
